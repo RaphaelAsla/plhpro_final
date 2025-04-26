@@ -40,7 +40,7 @@ knn = Pipeline(
     ]
 )
 
-param_grid = {"classifier__n_neighbors": range(1, 20)}
+param_grid = {"classifier__n_neighbors": range(1, 21)}
 results = []
 
 for c in range(2, 6):
@@ -72,11 +72,13 @@ for c in range(2, 6):
             "val_precision": val_prec,
         }
     )
-    print(f"Currently on cv: {c} with best k = {best_k}")
+    print(f"Currently on {c} folds, with best k = {best_k}")
 
 results_df = pd.DataFrame(results)
 
 best_k_value = int(results_df["best_k"].mode().iloc[0])
+
+print(f"\nUsing k = {best_k_value} as it is the most common among the different folds")
 
 final_model = Pipeline(
     [
@@ -108,17 +110,3 @@ new_data["Ανταπόκριση"] = predictions_new
 new_data.to_excel("predictions.xlsx", index=False)
 
 print("\nPredictions saved to 'predictions.xlsx'")
-
-#Currently on cv: 2 with best k = 2
-#Currently on cv: 3 with best k = 6
-#Currently on cv: 4 with best k = 2
-#Currently on cv: 5 with best k = 2
-#
-#Validation Accuracy: 0.8850
-#Validation Precision (macro): 0.9142
-#
-#Class-specific precision:
-#  no: 0.8284
-#  yes: 1.0000
-#
-#Predictions saved to 'predictions.xlsx'
