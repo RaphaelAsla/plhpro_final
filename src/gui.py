@@ -77,7 +77,7 @@ def model_check():
 # Λειτουργία κουμπιού για την Εκπαίδευση του μοντέλου πρόβλεψης
 def on_train():
     text_area.delete("1.0", tk.END)
-    metrics = train_knn()- #placeholder
+    metrics = train_knn()- #placeholder #-RAF to "-" katalathos to evales ? Ti einai ?
     messagebox.showinfo("Ενημέρωση", "Η εκπαίδευση του μοντέλου πρόβλεψης ολοκληρώθηκε!")
     text_area.insert(tk.END, "~~~ Εκπαίδευση Μοντέλου ~~~\n\n" + metrics)
 
