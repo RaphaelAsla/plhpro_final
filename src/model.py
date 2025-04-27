@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
@@ -8,74 +8,60 @@ from sklearn.metrics import accuracy_score, precision_score
 
 
 class KNN:
-    def __init__(self, response_column="Ανταπόκριση", test_size=0.2, random_state=42):
-        self.response_column = response_column
+    def __init__(self, k=None, test_size=0.2, random_state=42):
+        self.response_column = "Ανταπόκριση"
         self.test_size = test_size
         self.random_state = random_state
-        self.label_encoder = LabelEncoder()
-        self.best_k = None
+        self.best_k = k
         self.results = []
         self.detailed_results = []
+        self.class_validation_scores = {}
+        self.X = None
+        self.Y = None
+        self.X_train = None
+        self.y_train = None
+        self.X_valid = None
+        self.y_valid = None
+        self.preprocessor = None
+        self.validation_metrics_str = None
         self.validation_metrics = None
-        self.class_precision_scores = {}
+        self.cv_validation_metrics = None
+        self.final_model = None
 
-    def fit(self, train_data, k_range=range(2, 21), fold_range=range(2, 11)):
-        print("Preparing data...")
-        X = train_data.drop(self.response_column, axis=1)
-        y = train_data[self.response_column]
-
-        y = self.label_encoder.fit_transform(y)
-
-        categorical_cols = X.select_dtypes(
-            include=["object", "category"]
-        ).columns.tolist()
-        numeric_cols = X.select_dtypes(include=["int64", "float64"]).columns.tolist()
-
-        preprocessor = ColumnTransformer(
-            transformers=[
-                ("num", StandardScaler(), numeric_cols),
-                ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
-            ]
-        )
-
-        print("\nSplitting data into train and validation sets...")
-        X_train, X_valid, y_train, y_valid = train_test_split(
-            X, y, test_size=self.test_size, random_state=self.random_state, stratify=y
-        )
+    def find_best_k(self, k_range=range(2, 21), fold_range=range(2, 11)):
+        if self.best_k is not None:
+            raise ValueError("k value has already been defined.")
+        if self.X is None:
+            raise ValueError("Training data has not been fed to network yet. Call feed_data() first.")
 
         knn = Pipeline(
             [
-                ("preprocessor", preprocessor),
+                ("preprocessor", self.preprocessor),
                 ("classifier", KNeighborsClassifier()),
             ]
         )
 
         param_grid = {"classifier__n_neighbors": k_range}
 
-        print("Starting GridSearch across folds...\n")
         for c in fold_range:
-            print(f"Fold {c}: Running GridSearchCV...")
             grid_search = GridSearchCV(
                 knn,
                 param_grid,
                 cv=StratifiedKFold(n_splits=c),
                 scoring={"precision": "precision_macro", "accuracy": "accuracy"},
-                refit="precision",
-                # refit="accuracy",
+                refit="precision", # type: ignore
                 n_jobs=-1,
                 return_train_score=True,
             )
 
-            grid_search.fit(X_train, y_train)
+            grid_search.fit(self.X_train, self.y_train)
 
             best_k = grid_search.best_params_["classifier__n_neighbors"]
 
             best_model = grid_search.best_estimator_
-            y_pred = best_model.predict(X_valid)
-            val_acc = accuracy_score(y_valid, y_pred)
-            val_prec = precision_score(
-                y_valid, y_pred, average="macro", zero_division=0
-            )
+            y_pred = best_model.predict(self.X_valid)
+            val_acc = accuracy_score(self.y_valid, y_pred)
+            val_prec = precision_score(self.y_valid, y_pred, average="macro", zero_division=0) # type: ignore
 
             self.results.append(
                 {
@@ -94,82 +80,100 @@ class KNN:
                 self.detailed_results.append(
                     {
                         "cv": c,
-                        "k": k,
-                        "cv_precision": mean_precision,
-                        "cv_accuracy": mean_accuracy,
+                        "k": int(k),
+                        "cv_precision": float(mean_precision),
+                        "cv_accuracy": float(mean_accuracy),
                     }
                 )
 
-            print(f"Fold {c} completed! Best k = {best_k}\n")
+        self.cv_validation_metrics = {
+            "best_k_per_fold": self.results,
+            "all_k_per_fold": self.detailed_results
+        }
 
         results_df = pd.DataFrame(self.results)
         self.best_k = int(results_df["best_k"].mode().iloc[0])
 
-        print(f"\nUsing k = {self.best_k} (most common best k among folds)")
+    def feed_data(self, train_data):
+        self.X = train_data.drop(self.response_column, axis=1)
+        self.y = train_data[self.response_column]
+
+        categorical_cols = self.X.select_dtypes(include=["object", "category"]).columns.tolist()
+        numeric_cols = self.X.select_dtypes(include=["int64", "float64"]).columns.tolist()
+
+        self.preprocessor = ColumnTransformer(
+            transformers=[
+                ("num", StandardScaler(), numeric_cols),
+                ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
+            ]
+        )
+
+        self.X_train, self.X_valid, self.y_train, self.y_valid = train_test_split(
+            self.X, self.y, test_size=self.test_size, shuffle=True, random_state=self.random_state, stratify=self.y
+        )
+
+    def fit(self):
+        if self.best_k is None:
+            raise ValueError("k value has not been set yet. Call find_best_k() or define it manually when creating the KNN")
+        if self.X is None:
+            raise ValueError("Training data has not been fed to network yet. Call feed_data() first.")
 
         self.final_model = Pipeline(
             [
-                ("preprocessor", preprocessor),
+                ("preprocessor", self.preprocessor),
                 ("classifier", KNeighborsClassifier(n_neighbors=self.best_k)),
             ]
         )
 
-        print("\nTraining final model on validation data...")
-        self.final_model.fit(X_train, y_train)
-
-        validation_predictions = self.final_model.predict(X_valid)
-        validation_accuracy = accuracy_score(y_valid, validation_predictions)
-        validation_precision = precision_score(
-            y_valid, validation_predictions, average="macro", zero_division=0
-        )
-
-        self.validation_metrics = {
-            "accuracy": validation_accuracy,
-            "precision": validation_precision,
-        }
-
-        print("\nFinal Validation Metrics:")
-        print(f"  • Validation Accuracy: {validation_accuracy:.4f}")
-        print(f"  • Validation Precision (macro): {validation_precision:.4f}")
-
-        print("\nClass-specific precision scores:")
-        unique_classes = self.label_encoder.classes_
-        for i, class_name in enumerate(unique_classes):
-            y_true_binary = (y_valid == i).astype(int)
-            y_pred_binary = (validation_predictions == i).astype(int)
-            class_prec = precision_score(y_true_binary, y_pred_binary, zero_division=0)
-            self.class_precision_scores[class_name] = class_prec
-            print(f"  - {class_name}: {class_prec:.4f}")
-
-        print("\nTraining final model on full data...")
-        self.final_model.fit(X, y)
-
-        return self
+        self.final_model.fit(self.X, self.y)
 
     def predict(self, new_data, output_path=None):
         if self.final_model is None:
             raise ValueError("Model has not been trained. Call fit() first.")
 
-        print("\nPredicting on new campaign data...")
         predictions_new = self.final_model.predict(new_data)
-        predictions_new = self.label_encoder.inverse_transform(predictions_new)
 
         result_df = new_data.copy()
         result_df[self.response_column] = predictions_new
 
         if output_path:
             result_df.to_excel(output_path, index=False)
-            print(f"\nPredictions saved to {output_path}.")
 
         return result_df
 
-    def get_metrics(self):
+    def make_metrics(self):
         if self.final_model is None:
             raise ValueError("Model has not been trained. Call fit() first.")
 
-        return {
-            "best_k_per_fold": self.results,
-            "all_k_per_fold": self.detailed_results,
-            "validation_metrics": self.validation_metrics,
-            "per_class_metrics": self.class_precision_scores,
+        self.final_model.fit(self.X_train, self.y_train)
+
+        validation_predictions = self.final_model.predict(self.X_valid)
+        validation_accuracy = accuracy_score(self.y_valid, validation_predictions)
+        validation_precision = precision_score(self.y_valid, validation_predictions, average="macro", zero_division=0) # type: ignore
+
+        precision_yes = precision_score(self.y_valid, validation_predictions, pos_label="yes", zero_division=0) # type: ignore
+        precision_no = precision_score(self.y_valid, validation_predictions, pos_label="no", zero_division=0) # type: ignore
+
+        accuracy_yes = (self.y_valid[self.y_valid == "yes"] == validation_predictions[self.y_valid == "yes"]).mean() # type: ignore
+        accuracy_no = (self.y_valid[self.y_valid == "no"] == validation_predictions[self.y_valid == "no"]).mean() # type: ignore
+
+        self.validation_metrics = {
+            "Accuracy": validation_accuracy,
+            "Precision": validation_precision,
+            "Yes Precision":  precision_yes,
+            "No Precision":  precision_no,
+            "Yes Accuracy":  accuracy_yes,
+            "No Accuracy":  accuracy_no,
         }
+
+        self.validation_metrics_str = ""
+        
+        if self.validation_metrics:
+            self.validation_metrics_str += "\nFinal Validation Metrics:\n"
+            self.validation_metrics_str += f"  • Validation Accuracy: {self.validation_metrics['Accuracy']:.4f}\n"
+            self.validation_metrics_str += f"  • Validation Precision (macro): {self.validation_metrics['Precision']:.4f}\n"
+            self.validation_metrics_str += "\n  • Class-specific Accuracy Scores:\n"
+            self.validation_metrics_str += f"    - Yes Accuracy: {self.validation_metrics['Yes Accuracy']:.4f}\n"
+            self.validation_metrics_str += f"    - No Accuracy: {self.validation_metrics['No Accuracy']:.4f}\n\n"
+            self.validation_metrics_str += f"    - Yes Precision (macro): {self.validation_metrics['Yes Precision']:.4f}\n"
+            self.validation_metrics_str += f"    - No Precision (macro): {self.validation_metrics['No Precision']:.4f}\n"

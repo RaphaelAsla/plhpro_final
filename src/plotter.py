@@ -8,11 +8,14 @@ class Plotter:
         self.best_k_per_fold = pd.DataFrame(metrics["best_k_per_fold"])
         self.all_k_per_fold = pd.DataFrame(metrics["all_k_per_fold"])
         self.validation_metrics = metrics["validation_metrics"]
-        self.per_class_metrics = metrics["per_class_metrics"]
+        self.per_class_metrics = metrics["per_class_validation_metrics"]
 
-        self.best_k = int(self.best_k_per_fold["best_k"].mode().iloc[0])
+        self.best_k = None if self.best_k_per_fold.empty else int(self.best_k_per_fold["best_k"].mode().iloc[0])
 
     def best_validation_metrics_vs_number_of_folds(self):
+        if self.best_k is None:
+            raise ValueError("This plot is not available, k was set manually.")
+
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.plot(
             self.best_k_per_fold["cv"],
@@ -41,6 +44,9 @@ class Plotter:
         return fig
 
     def cv_precision_vs_k_value_for_different_folds(self):
+        if self.best_k is None:
+            raise ValueError("This plot is not available, k was set manually.")
+
         self.all_k_per_fold["cv"] = self.all_k_per_fold["cv"].astype("category")
 
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -63,6 +69,9 @@ class Plotter:
         return fig
 
     def cv_accuracy_vs_k_value_for_different_folds(self):
+        if self.best_k is None:
+            raise ValueError("This plot is not available, k was set manually.")
+
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.lineplot(
             data=self.all_k_per_fold,
@@ -85,7 +94,7 @@ class Plotter:
         return fig
 
     def final_validation_metrics(self):
-        metrics = ["accuracy", "precision"]
+        metrics = ["Accuracy", "Precision"]
         values = [self.validation_metrics[m] for m in metrics]
 
         class_names = list(self.per_class_metrics.keys())
