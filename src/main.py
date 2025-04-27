@@ -10,26 +10,38 @@ predictor = KNN()
 predictor.feed_data(train_data)
 predictor.find_best_k()
 predictor.fit()
-predictions = predictor.predict(new_data)
-predictor.make_metrics()
+predictions = predictor.predict(
+    new_data, output_path="./../predictions/predictions.xlsx"
+)
+predictor.gen_metrics()
 print(predictor.validation_metrics_str)
-print(predictor.cv_validation_metrics)
 
-#predictions = predictor.predict(
-#    new_data, output_path="./../predictions/predictions.xlsx"
-#)
-#metrics = predictor.get_metrics()
 
-#plotter = Plotter(metrics)
-#
-#fig1 = plotter.best_validation_metrics_vs_number_of_folds()
-#fig1.savefig("./../plots/validation_metrics_vs_folds.png")
-#
-#fig2 = plotter.cv_precision_vs_k_value_for_different_folds()
-#fig2.savefig("./../plots/cv_precision_vs_k.png")
-#
-#fig3 = plotter.cv_accuracy_vs_k_value_for_different_folds()
-#fig3.savefig("./../plots/cv_accuracy_vs_k.png")
-#
-#fig4 = plotter.final_validation_metrics()
-#fig4.savefig("./../plots/validation_results.png")
+plotter = Plotter(predictor.overall_validation_metrics)
+
+fig1 = plotter.plot_best_cv_metrics_vs_folds()
+if fig1 is not None:
+    fig1.savefig("./../plots/plot_best_cv_metrics_vs_folds.png")
+
+fig2 = plotter.plot_cv_metrics_vs_k("precision")
+if fig2 is not None:
+    fig2.savefig("./../plots/plot_cv_metrics_vs_k (precision).png")
+
+fig3 = plotter.plot_cv_metrics_vs_k("accuracy")
+if fig3 is not None:
+    fig3.savefig("./../plots/plot_cv_metrics_vs_k (accuracy).png")
+
+fig4 = plotter.plot_cv_metrics_heatmap('precision')
+if fig4 is not None:
+    fig4.savefig("./../plots/plot_cv_metrics_heatmap (precision).png")
+
+fig5 = plotter.plot_cv_metrics_heatmap('accuracy')
+if fig5 is not None:
+    fig5.savefig("./../plots/plot_cv_metrics_heatmap (accuracy).png")
+
+fig6 = plotter.plot_test_validation_metrics()
+fig6.savefig("./../plots/plot_test_validation_metrics.png")
+
+fig7 = plotter.plot_confusion_matrix()
+fig7.savefig("./../plots/plot_confusion_matrix.png")
+

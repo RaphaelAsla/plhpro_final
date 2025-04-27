@@ -4,7 +4,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
-from sklearn.metrics import accuracy_score, precision_score
+from sklearn.metrics import accuracy_score, precision_score, confusion_matrix, classification_report
 
 
 class KNN:
@@ -15,7 +15,6 @@ class KNN:
         self.best_k = k
         self.results = []
         self.detailed_results = []
-        self.class_validation_scores = {}
         self.X = None
         self.Y = None
         self.X_train = None
@@ -23,9 +22,10 @@ class KNN:
         self.X_valid = None
         self.y_valid = None
         self.preprocessor = None
-        self.validation_metrics_str = None
         self.validation_metrics = None
+        self.validation_metrics_str = ""
         self.cv_validation_metrics = None
+        self.overall_validation_metrics = None
         self.final_model = None
 
     def find_best_k(self, k_range=range(2, 21), fold_range=range(2, 11)):
@@ -60,15 +60,15 @@ class KNN:
 
             best_model = grid_search.best_estimator_
             y_pred = best_model.predict(self.X_valid)
-            val_acc = accuracy_score(self.y_valid, y_pred)
-            val_prec = precision_score(self.y_valid, y_pred, average="macro", zero_division=0) # type: ignore
+            accuracy = accuracy_score(self.y_valid, y_pred)
+            precision = precision_score(self.y_valid, y_pred, average="macro", zero_division=0) # type: ignore
 
             self.results.append(
                 {
                     "cv": c,
                     "best_k": best_k,
-                    "val_accuracy": val_acc,
-                    "val_precision": val_prec,
+                    "accuracy": accuracy,
+                    "precision": precision,
                 }
             )
 
@@ -87,8 +87,8 @@ class KNN:
                 )
 
         self.cv_validation_metrics = {
-            "best_k_per_fold": self.results,
-            "all_k_per_fold": self.detailed_results
+            "best_k_per_fold": pd.DataFrame(self.results),
+            "all_k_per_fold": pd.DataFrame(self.detailed_results)
         }
 
         results_df = pd.DataFrame(self.results)
@@ -141,32 +141,34 @@ class KNN:
 
         return result_df
 
-    def make_metrics(self):
+    def gen_metrics(self):
         if self.final_model is None:
             raise ValueError("Model has not been trained. Call fit() first.")
 
         self.final_model.fit(self.X_train, self.y_train)
 
-        validation_predictions = self.final_model.predict(self.X_valid)
-        validation_accuracy = accuracy_score(self.y_valid, validation_predictions)
-        validation_precision = precision_score(self.y_valid, validation_predictions, average="macro", zero_division=0) # type: ignore
-
-        precision_yes = precision_score(self.y_valid, validation_predictions, pos_label="yes", zero_division=0) # type: ignore
-        precision_no = precision_score(self.y_valid, validation_predictions, pos_label="no", zero_division=0) # type: ignore
-
-        accuracy_yes = (self.y_valid[self.y_valid == "yes"] == validation_predictions[self.y_valid == "yes"]).mean() # type: ignore
-        accuracy_no = (self.y_valid[self.y_valid == "no"] == validation_predictions[self.y_valid == "no"]).mean() # type: ignore
+        y_pred = self.final_model.predict(self.X_valid)
+        report = classification_report(
+            self.y_valid, 
+            y_pred,
+            output_dict=True
+        )
 
         self.validation_metrics = {
-            "Accuracy": validation_accuracy,
-            "Precision": validation_precision,
-            "Yes Precision":  precision_yes,
-            "No Precision":  precision_no,
-            "Yes Accuracy":  accuracy_yes,
-            "No Accuracy":  accuracy_no,
+            "Accuracy": report['accuracy'], # type: ignore
+            "Precision": report['macro avg']['precision'], # type: ignore
+            "Yes Precision": report['yes']['recall'], # type: ignore
+            "No Precision": report['no']['recall'], # type: ignore
+            "Yes Accuracy": report['yes']['precision'], # type: ignore
+            "No Accuracy": report['no']['precision'], # type: ignore
+            'confusion_matrix': confusion_matrix(self.y_valid, y_pred), # type: ignore
         }
 
-        self.validation_metrics_str = ""
+        self.overall_validation_metrics = {
+            'cv_validation_metrics': self.cv_validation_metrics,
+            'validation_metrics': self.validation_metrics,
+            'best_k': self.best_k
+        }
         
         if self.validation_metrics:
             self.validation_metrics_str += "\nFinal Validation Metrics:\n"
