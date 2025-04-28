@@ -16,7 +16,7 @@ if __name__ == "__main__":
     knn.feed_data(train_data) # <- pretty self explanatory
 
     # mporoyme na valoyme kai custom ranges gia neighbors (default 2 - 20) kai folds (2, 10), des (line 30 model.py) (pairnei ligh wra, an thes na testareis kalytera kanto me pre defined neighbors (eg KNN(3))
-    knn.find_best_neighbors() # <- AN den exoyme thesei monoi mas tous neighbors (px predictor = KNN(3)), trexoyme ayto kai kanoyme me stoxo na vroyme to poio optimal (pio balanced synhthws, alla whatever)
+    knn.find_best_neighbors() # <- AN den exoyme thesei monoi mas tous neighbors (px predictor = KNN(3)), trexoyme ayto me stoxo na vroyme to poio optimal (pio balanced synhthws, alla whatever) plithos gia tous neighbors
 
     knn.fit() # <- training
 
