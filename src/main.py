@@ -2,46 +2,35 @@ from model import KNN
 from plotter import Plotter
 import pandas as pd
 
-# ta paths einai relative, prepei na to trekseis enw eisai mesa sto src directory !!
-train_data = pd.read_excel("./../data/Project40PastCampaignData.xlsx")
-new_data = pd.read_excel("./../data/Project40NewCampaignData.xlsx")
+# auta tha ginontai mesa sto GUI apo ton xrhsth 
+########################################################################################
+# (ta paths einai relative, prepei na to trekseis enw eisai mesa sto src directory) !! #
+train_data = pd.read_excel("./../data/Project40PastCampaignData.xlsx")                 #
+new_data = pd.read_excel("./../data/Project40NewCampaignData.xlsx")                    #
+########################################################################################
 
-predictor = KNN()
-predictor.feed_data(train_data)
-predictor.find_best_k()
-predictor.fit()
-predictions = predictor.predict(
-    new_data, output_path="./../predictions/predictions.xlsx"
-)
-predictor.gen_metrics()
-print(predictor.validation_metrics_str)
+if __name__ == "__main__":
+    # auta epishs tha ginontai mesa sto GUI, o xrhsths tha mporei na kanei define monos toy ton aritho twn neighbors h an thelei na ginei aytomata to pick (find_best_neighbors)
+    # twra ta exw edw gia testing
+    ########################################################################################################################################################################################################################
+    knn = KNN() # <- neighbors go here (eg KNN(3))
+    knn.feed_data(train_data) # <- pretty self explanatory
 
+    # mporoyme na valoyme kai custom ranges gia des (line 30 model.py) (pairnei ligh wra, an thes na testareis kalytera kanto me pre defined neighbors (eg KNN(3))
+    # obv den to kaloyme an exoyme kanei define tous neighbors monoi mas
+    knn.find_best_neighbors() # <- AN den exoyme thesei monoi mas tous neighbors (px predictor = KNN(3)), trexoyme ayto kai kanoyme me stoxo na vroyme to poio optimal (pio balanced synhthws, alla whatever)
 
-plotter = Plotter(predictor.overall_validation_metrics)
+    knn.fit() # <- training
 
-fig1 = plotter.plot_best_cv_metrics_vs_folds()
-if fig1 is not None:
-    fig1.savefig("./../plots/plot_best_cv_metrics_vs_folds.png")
+    predictions = knn.predict(new_data) # <- pretty self explanatory (returns dict)
+    #predictions = knn.predict(new_data, output_path="./../predictions/predictions.xlsx") # <- mporoyme na ta kanoyme kai kateythian save
 
-fig2 = plotter.plot_cv_metrics_vs_k("precision")
-if fig2 is not None:
-    fig2.savefig("./../plots/plot_cv_metrics_vs_k (precision).png")
+    knn.gen_metrics() # <- kanei generate ola ta metrics
 
-fig3 = plotter.plot_cv_metrics_vs_k("accuracy")
-if fig3 is not None:
-    fig3.savefig("./../plots/plot_cv_metrics_vs_k (accuracy).png")
+    # an tha thes se dict ->  knn.validation_metrics (line 176 model.py gia na deis structure) 
+    print(knn.validation_metrics_str) # <- ta idia metrics alla se ENA string an aplos thes na ta valeis se kapoio pedio sto gui
+    ########################################################################################################################################################################################################################
 
-fig4 = plotter.plot_cv_metrics_heatmap('precision')
-if fig4 is not None:
-    fig4.savefig("./../plots/plot_cv_metrics_heatmap (precision).png")
-
-fig5 = plotter.plot_cv_metrics_heatmap('accuracy')
-if fig5 is not None:
-    fig5.savefig("./../plots/plot_cv_metrics_heatmap (accuracy).png")
-
-fig6 = plotter.plot_test_validation_metrics()
-fig6.savefig("./../plots/plot_test_validation_metrics.png")
-
-fig7 = plotter.plot_confusion_matrix()
-fig7.savefig("./../plots/plot_confusion_matrix.png")
-
+    # sto telos, mono ayta prepei na einai sto edw
+    #gui = GUI(width, height, title)
+    #gui.run()
