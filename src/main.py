@@ -35,8 +35,9 @@ if __name__ == "__main__":
     plotter = Plotter(knn.overall_validation_metrics)
 
     # an kaneis specify path kanoyn mono save, an den kaneis, ta vlepeis on run
-    plotter.plot_neighbors_vs_metric_per_fold(optimize_on, "./../plots/plot_neighbors_vs_metric_per_fold")
-    plotter.plot_mean_metric_per_fold(optimize_on, "./../plots/plot_mean_metric_per_fold")
+    #plotter.plot_neighbors_vs_metric_per_fold(optimize_on, "./../plots/plot_neighbors_vs_metric_per_fold")
+    #plotter.plot_mean_metric_per_fold(optimize_on, "./../plots/plot_mean_metric_per_fold")
+    plotter.plot_trisurf_metric_per_fold(optimize_on, "./../plots/plot_plot_trisurf_metric_per_fold")
     #################################################################
 
     # ta exw edw gia testing, sto telos, mono ayta prepei na vriskontai edw

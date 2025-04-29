@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
+from mpl_toolkits.mplot3d import Axes3D
 
 class Plotter:
     def __init__(self, metrics):
@@ -49,5 +51,22 @@ class Plotter:
         plt.savefig(output_path) if output_path else plt.show()
         plt.clf()
 
-    # heatmaps
-    # confusion matrix
+    def plot_trisurf_metric_per_fold(self, metric="accuracy", output_path=None):
+        metric = "cv_" + metric
+        title = metric[3].upper() + metric[3:]
+
+        df = self.cv_metrics[1]
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')  
+
+        ax.scatter(df['neighbors'], df['cv'], df['cv_accuracy'], cmap="viridis", edgecolor="none") # type: ignore
+
+        ax.set_xlabel('neighbors')
+        ax.set_ylabel('cv')
+        ax.set_zlabel('accuracy') # type: ignore
+
+        plt.title(f"{title} vs Number of Neighbors per Fold 3D")
+
+        plt.savefig(output_path) if output_path else plt.show()
+
