@@ -27,7 +27,7 @@ class KNN:
         self.overall_validation_metrics = None
         self.final_model = None
 
-    def find_best_neighbors(self, k_range=range(2, 21), fold_range=range(2, 11)):
+    def find_best_neighbors(self, on="accuracy", k_range=range(2, 21), fold_range=range(2, 11)):
         knn = Pipeline(
             [
                 ("preprocessor", self.preprocessor),
@@ -50,7 +50,7 @@ class KNN:
                 param_grid,
                 cv=StratifiedKFold(n_splits=c),
                 scoring=scoring,
-                refit="precision", # type: ignore
+                refit=on, # type: ignore
                 n_jobs=-1,
                 return_train_score=True,
             )
@@ -68,8 +68,8 @@ class KNN:
                 {
                     "cv": c,
                     "neighbors": current_best_n_neighbors,
-                    "accuracy": accuracy,
-                    "precision": precision,
+                    "cv_accuracy": accuracy,
+                    "cv_precision": precision,
                 }
             )
 
@@ -86,11 +86,6 @@ class KNN:
                         "cv_accuracy": mean_accuracy,
                     }
                 )
-
-        self.cv_validation_metrics = {
-            "best_neighbors_per_fold": pd.DataFrame(self.results),
-            "all_neighbors_per_fold": pd.DataFrame(self.detailed_results),
-        }
 
         results_df = pd.DataFrame(self.results)
         self.best_n_neighbors = results_df["neighbors"].mode().iloc[0]
@@ -183,18 +178,22 @@ class KNN:
             "confusion_matrix": cm, # type: ignore
         }
 
+        self.cv_validation_metrics = {
+            "best_neighbors_per_fold": pd.DataFrame(self.results),
+            "all_neighbors_per_fold": pd.DataFrame(self.detailed_results),
+        }
+
         self.overall_validation_metrics = {
             "cv_validation_metrics": self.cv_validation_metrics,
             "validation_metrics": self.validation_metrics,
             "best_neighbors": self.best_n_neighbors,
         }
 
-        if self.validation_metrics:
-            self.validation_metrics_str += "\nFinal Validation Metrics:\n"
-            self.validation_metrics_str += (f"  • Validation Accuracy: {self.validation_metrics['Accuracy']:.4f}\n")
-            self.validation_metrics_str += f"  • Validation Precision (macro): {self.validation_metrics['Precision']:.4f}\n"
-            self.validation_metrics_str += "\n  • Class-specific Accuracy Scores:\n"
-            self.validation_metrics_str += (f"    - Yes Accuracy: {self.validation_metrics['Yes Accuracy']:.4f}\n")
-            self.validation_metrics_str += (f"    - No Accuracy: {self.validation_metrics['No Accuracy']:.4f}\n\n")
-            self.validation_metrics_str += f"    - Yes Precision (macro): {self.validation_metrics['Yes Precision']:.4f}\n"
-            self.validation_metrics_str += f"    - No Precision (macro): {self.validation_metrics['No Precision']:.4f}\n"
+        self.validation_metrics_str += "\nFinal Validation Metrics:\n"
+        self.validation_metrics_str += (f"  • Validation Accuracy: {self.validation_metrics['Accuracy']:.4f}\n")
+        self.validation_metrics_str += f"  • Validation Precision (macro): {self.validation_metrics['Precision']:.4f}\n"
+        self.validation_metrics_str += "\n  • Class-specific Accuracy Scores:\n"
+        self.validation_metrics_str += (f"    - Yes Accuracy: {self.validation_metrics['Yes Accuracy']:.4f}\n")
+        self.validation_metrics_str += (f"    - No Accuracy: {self.validation_metrics['No Accuracy']:.4f}\n\n")
+        self.validation_metrics_str += f"    - Yes Precision (macro): {self.validation_metrics['Yes Precision']:.4f}\n"
+        self.validation_metrics_str += f"    - No Precision (macro): {self.validation_metrics['No Precision']:.4f}\n"
