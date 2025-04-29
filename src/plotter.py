@@ -26,7 +26,7 @@ class Plotter:
         plt.ylabel(f"{title}")
         plt.title(f"{title} vs Number of Neighbors per Fold")
         plt.grid(True)
-        plt.legend(title="Fold", loc='upper right', fontsize='small', labelspacing=0.3) 
+        plt.legend(title="Folds", loc='upper right', fontsize='small', labelspacing=0.3) 
         plt.savefig(output_path) if output_path else plt.show()
         plt.clf()
 
@@ -41,7 +41,7 @@ class Plotter:
 
         plt.xlabel("Number of Folds")
         plt.ylabel(f"{title}")
-        plt.title(f"{title} vs Best number of Neighbors per Fold")
+        plt.title(f"{title} vs Mean per Fold")
         plt.grid(True)
 
         plt.ylim(df[metric].min() - 0.005, df[metric].max() + 0.005)
