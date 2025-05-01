@@ -186,11 +186,11 @@ class CampaignPredictionApp:
             self.past_campaign_data = temp_data
             messagebox.showinfo("Επιτυχία!", "Τα δεδομένα της προηγούμενης καμπάνιας φορτώθηκαν επιτυχώς.")
             self._log("Τα δεδομένα της προηγούμενης καμπάνιας φορτώθηκαν επιτυχώς.")
-            messagebox.showinfo("Επόμενο Βημα","Προχωρήστε στην Εκπαίδευση Μοντέλου Πρόβλεψης.")
-            messagebox.showwarning("Προειδοποιήση!", "Αυτή η διαδικασία ενδέχεται να διαρκέσει περισσότερη ώρα.")
+            messagebox.showinfo("Επόμενο Βήμα","Προχωρήστε στην Εκπαίδευση Μοντέλου Πρόβλεψης.")
+            messagebox.showwarning("Προειδοποίηση!", "Αυτή η διαδικασία ενδέχεται να διαρκέσει περισσότερη ώρα.")
             self._log("\nΕπόμενο βήμα: Προχωρήστε στην εκπαίδευση του μοντέλου πρόβλεψης.")
             self._log("Προειδοποίηση: Αυτή η διαδικασία ενδέχεται να διαρκέσει περισσότερη ώρα.")
-            self._log("Tο γραφικό περιβάλλον της εφαρμογής πιθανώς να 'παγώσει' κατά τη διάρκεια της εκπαίδευσης.")
+            self._log("Το γραφικό περιβάλλον της εφαρμογής πιθανώς να 'παγώσει' κατά τη διάρκεια της εκπαίδευσης.")
             self.knn_model = None # Ακύρωση τυχόν υπάρχοντος εκπαιδευμένου μοντέλου
             self.predictions_df = None # Ακύρωση τυχόν προβλέψεων
         else:
@@ -224,7 +224,7 @@ class CampaignPredictionApp:
             title="Αποθήκευση Προβλέψεων"
             )
         if not save_path:
-            messagebox.showwarning("Ακύρωση", "Η αποθήκεσυη ακυρώθηκε.")
+            messagebox.showwarning("Ακύρωση", "Η αποθήκευση ακυρώθηκε.")
             self._log("Η αποθήκευση ακυρώθηκε.")
             return False
         try:
@@ -251,7 +251,7 @@ class CampaignPredictionApp:
                     
     def on_train(self):
         """Μέθοδος που εκτελείται όταν πατηθεί το κουμπί Εκπαίδευσης"""        
-        self._log("\n=== Έναρξη Διαδικασίας Εκπαίδεσυης Μοντέλου Πρόβλεψης Κ-nn ===\n")
+        self._log("\n=== Έναρξη Διαδικασίας Εκπαίδευσης Μοντέλου Πρόβλεψης Κ-nn ===\n")
         if self.past_campaign_data is None: # Έλεγχος εάν έχουν φορτωθεί δεδομένα εκπαίδευσης
             messagebox.showerror("Σφάλμα!", "Δεν έχουν φορτωθεί δεδομένα εκπαίδευσης.")
             self._log("Σφάλμα: Απαιτούνται δεδομένα εκπαίδευσης.")
@@ -263,7 +263,7 @@ class CampaignPredictionApp:
             self.knn_model.feed_data(self.past_campaign_data)
             
             self._log("Εύρεση βέλτιστου αριθμού γειτόνων (k)...")
-                    
+
             k_range = range(2, 16) # Προσαρμόζουμε το εύρος ανάλογα (μεγαλύτερο εύρος γειτόνων=αργότερη εκτέλεση)
             fold_range = range(2, 8) # Προσαρμόζουμε το εύρος ανάλογα (μεγαλύτερο εύρος folds=αργότερη εκτέλεση)
             self.knn_model.find_best_neighbors(k_range=k_range, fold_range=fold_range)
@@ -277,8 +277,8 @@ class CampaignPredictionApp:
             self._log("\n=================================================\n")
             self.predictions_df = None # Ακύρωση τυχόν προηγούμενων προβλέψεων τώρα που το μοντέλο επανεκπαιδεύτηκε
             
-            messagebox.showinfo("Επόμενο Βήμα", "Προχωρήστε στην φόρτωση των δεδομένων νέας καμπάνιας.")
-            self._log("Επόμενο βήμα: Προχωρήστε στην φόρτωση των δεδομένων νέας καμπάνιας.")
+            messagebox.showinfo("Επόμενο Βήμα", "Προχωρήστε στη φόρτωση των δεδομένων νέας καμπάνιας.")
+            self._log("Επόμενο βήμα: Προχωρήστε στη φόρτωση των δεδομένων νέας καμπάνιας.")
         except ValueError as ve:
             messagebox.showerror("Σφάλμα Εκπαίδευσης!", f"Προέκυψε σφάλμα τιμής κατά την εκπαίδευση του μοντέλου πρόβλεψης:\n{str(ve)}")
             self._log(f"Σφάλμα (ValueError) κατά την εκπαίδευση: {str(ve)}")
@@ -302,10 +302,10 @@ class CampaignPredictionApp:
             return
             
         try:
-            self._log(f"Χρήση του εκπαιδευμένου μοντέλου για πρόβλεψη...")
-            
-            self.predictions_df = self.knn_model.predict(self.new_campaign_data, output_path=None) # Κλήση της μεθόδου predict απο το knn_processor
-            
+            self._log("Χρήση του εκπαιδευμένου μοντέλου για πρόβλεψη...")
+
+            self.predictions_df = self.knn_model.predict(self.new_campaign_data, output_path=None) # Κλήση της μεθόδου predict απο το knn_model
+
             messagebox.showinfo("Πρόβλεψη Ολοκληρώθηκε!", f"Η πρόβλεψη της ανταπόκρισης για τους {len(self.new_campaign_data)} νέους πελάτες ολοκληρώθηκε επιτυχώς.\nΜπορείτε να αποθηκεύσετε τα αποτελέσματα με το κουμπί 'Αποθήκευση Πρόβλεψης'.")
             self._log("Η πρόβλεψη ολοκληρώθηκε")
             self._log("\n=================================================\n")
@@ -334,4 +334,3 @@ class CampaignPredictionApp:
         self.master.bind("<q>", self.quit_app)
         self.master.bind("<Escape>", self.quit_app)
         self.master.mainloop()
-          
