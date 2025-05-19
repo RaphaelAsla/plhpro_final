@@ -13,6 +13,7 @@ width και height δίνονται σε pixels.
 """
 import tkinter as tk
 from tkinter import messagebox, filedialog, scrolledtext, ttk
+from pathlib import Path
 import sv_ttk
 import pandas as pd
 from model import KNN
@@ -241,6 +242,9 @@ class CampaignPredictionApp:
         """
         Εσωτερική μέθοδος κλάσης φόρτωσης δεδομένων απο αρχείο Excel +
         Διαχείριση Εξαιρέσεων.
+        Ο χρήστης οδηγείται από το κατάλογο του τρέχοντος αρχείου σε default
+        υποφάκελο ο οποίος αναμένεται να περιέχει τα αρχεία Excel που μας
+        ενδιαφέρουν.
         H μορφή που αναμένεται να έχει το Excel αρχείο που φορτώνεται είναι η
         εξής:
         [Ηλικία | Φύλο | Περιοχή |	Email | Χρήση Κινητού |
@@ -250,8 +254,16 @@ class CampaignPredictionApp:
         Κάθε στήλη είναι ΥΠΟΧΡΕΩΤΙΚΗ για να τρέξει ορθά η εφαρμογή.
         Αλλάζει το index σε μορφή 'Πελάτης Ν', έαν έχει το default RangeIndex.
         """
+        # Βρίσκουμε το κατάλογο του τρέχοντος αρχείου και τον γονέα του γονέα του
+        base_dir = Path(__file__).resolve().parent.parent
+        # Ορίζουμε τον υποφάκελο ~/data ως default
+        default_dir = base_dir / 'data'
+        # Εάν δεν υπάρχει - πάμε στο current working directory
+        if not default_dir.exists():
+            default_dir = Path.cwd()
         file_path= filedialog.askopenfilename(
             title=title,
+            initialdir=default_dir,
             filetypes=[("Excel files", "*.xlsx")]
             )
         if not file_path:
