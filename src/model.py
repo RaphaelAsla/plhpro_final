@@ -195,5 +195,6 @@ class KNN:
         self.validation_metrics_str += "\n  • Class-specific Accuracy Scores:\n"
         self.validation_metrics_str += (f"    - Yes Accuracy: {self.validation_metrics['Yes Accuracy']:.4f}\n")
         self.validation_metrics_str += (f"    - No Accuracy: {self.validation_metrics['No Accuracy']:.4f}\n\n")
-        self.validation_metrics_str += f"    - Yes Precision (macro): {self.validation_metrics['Yes Precision']:.4f}\n"
-        self.validation_metrics_str += f"    - No Precision (macro): {self.validation_metrics['No Precision']:.4f}\n"
+        self.validation_metrics_str += "\n  • Class-specific Precision Scores:\n"
+        self.validation_metrics_str += f"     - Yes Precision (macro): {self.validation_metrics['Yes Precision']:.4f}\n"
+        self.validation_metrics_str += f"     - No Precision (macro): {self.validation_metrics['No Precision']:.4f}\n"
