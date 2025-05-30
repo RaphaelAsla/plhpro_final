@@ -1,19 +1,27 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pandas as pd
-from mpl_toolkits.mplot3d import Axes3D
 
 class Plotter:
     def __init__(self, metrics):
+        """
+        Αρχικοποιεί την κλάση Plotter με τα δεδομένα των μετρικών.
+
+        :param metrics: Ένα dict που περιέχει τις μετρικές από την εκπαίδευση του μοντέλου.
+        """
         self.cv_metrics = (
             metrics["cv_validation_metrics"]["best_neighbors_per_fold"],
             metrics["cv_validation_metrics"]["all_neighbors_per_fold"]
         )
-        self.fval_metrics = metrics["validation_metrics"]
         self.best_neighbors = metrics["best_neighbors"]
         
 
     def plot_neighbors_vs_metric_per_fold(self, metric="accuracy", output_path=None):
+        """
+        Δημιουργεί ένα graph που απεικονίζει τη σχέση μεταξύ του αριθμού των γειτόνων και της μετρικής για κάθε fold.
+
+        :param metric: Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
+        :param output_path: Το path για αποθήκευση του γραφήματος. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
+        """
         metric = "cv_" + metric
         title = metric[3].upper() + metric[3:]
 
@@ -33,6 +41,11 @@ class Plotter:
         plt.clf()
 
     def plot_mean_metric_per_fold(self, metric="accuracy", output_path=None):
+        """
+        Δημιουργεί ένα graph που απεικονίζει τη μέση τιμή της μετρικής για κάθε fold.
+        :param metric: Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
+        :param output_path: Το path για αποθήκευση του γραφήματος. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
+        """
         metric = "cv_" + metric
         title = metric[3].upper() + metric[3:]
 
@@ -52,6 +65,11 @@ class Plotter:
         plt.clf()
 
     def plot_trisurf_metric_per_fold(self, metric="accuracy", output_path=None):
+        """
+        Δημιουργεί ένα 3D graph που απεικονίζει τη σχέση μεταξύ του αριθμού των γειτόνων, της μετρικής και της ακρίβειας για κάθε fold.
+        :param metric: Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
+        :param output_path: Το path για αποθήκευση του γραφήματος. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
+        """
         metric = "cv_" + metric
         title = metric[3].upper() + metric[3:]
 
