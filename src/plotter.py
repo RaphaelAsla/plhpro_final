@@ -67,7 +67,7 @@ class Plotter:
         plt.savefig(output_path) if output_path else plt.show()
         plt.clf()
 
-    def plot_trisurf_metric_per_fold(self, metric="accuracy", output_path=None):
+    def plot_trisurf_neighbor_vs_metric_per_fold(self, metric="accuracy", output_path=None):
         """
         Δημιουργεί ένα 3D graph που απεικονίζει τη σχέση μεταξύ του αριθμού των γειτόνων, της μετρικής και της ακρίβειας για κάθε fold.
         :Parameters 
