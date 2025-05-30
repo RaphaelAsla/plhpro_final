@@ -6,7 +6,8 @@ class Plotter:
         """
         Αρχικοποιεί την κλάση Plotter με τα δεδομένα των μετρικών.
 
-        :param metrics: Ένα dict που περιέχει τις μετρικές από την εκπαίδευση του μοντέλου.
+        :Parameters 
+            metrics (dict): Ένα dict που περιέχει τις μετρικές από την εκπαίδευση του μοντέλου.
         """
         self.cv_metrics = (
             metrics["cv_validation_metrics"]["best_neighbors_per_fold"],
@@ -19,14 +20,15 @@ class Plotter:
         """
         Δημιουργεί ένα graph που απεικονίζει τη σχέση μεταξύ του αριθμού των γειτόνων και της μετρικής για κάθε fold.
 
-        :param metric: Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
-        :param output_path: Το path για αποθήκευση του γραφήματος. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
+        :Parameters 
+            metric (string) : Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
+            output_path (string): Το path για αποθήκευση του graph. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
         """
         metric = "cv_" + metric
         title = metric[3].upper() + metric[3:]
 
         df = self.cv_metrics[1]
-        df["cv"] = df["cv"].astype(str) # skipping some folds otherwise
+        df["cv"] = df["cv"].astype(str) # παραλείπονται κάποια folds χωρίς αυτό, δεν είμαι σίγουρος γιατί
 
         sns.lineplot(data=df, x="neighbors", y=metric, hue="cv", marker="o")
 
@@ -43,8 +45,9 @@ class Plotter:
     def plot_mean_metric_per_fold(self, metric="accuracy", output_path=None):
         """
         Δημιουργεί ένα graph που απεικονίζει τη μέση τιμή της μετρικής για κάθε fold.
-        :param metric: Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
-        :param output_path: Το path για αποθήκευση του γραφήματος. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
+        :Parameters 
+            metric (string): Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
+            output_path (string): Το path για αποθήκευση του graph. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
         """
         metric = "cv_" + metric
         title = metric[3].upper() + metric[3:]
@@ -67,8 +70,9 @@ class Plotter:
     def plot_trisurf_metric_per_fold(self, metric="accuracy", output_path=None):
         """
         Δημιουργεί ένα 3D graph που απεικονίζει τη σχέση μεταξύ του αριθμού των γειτόνων, της μετρικής και της ακρίβειας για κάθε fold.
-        :param metric: Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
-        :param output_path: Το path για αποθήκευση του γραφήματος. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
+        :Parameters 
+            metric (string): Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
+            output_path (string): Το path για αποθήκευση του graph. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
         """
         metric = "cv_" + metric
         title = metric[3].upper() + metric[3:]

@@ -17,12 +17,13 @@ class KNN:
             test_size (float): Το ποσοστό των δεδομένων που θα χρησιμοποιηθούν για επικύρωση.
             random_state (int): Το seed για αναπαραγωγιμότητα.
         """
+
         self.response_column = "Ανταπόκριση"  # Ονομασία της στήλης που περιέχει την ανταπόκριση
         self.test_size = test_size  # Το ποσοστό των δεδομένων που θα χρησιμοποιηθούν για επικύρωση
         self.random_state = random_state  # Το seed
         self.best_n_neighbors = neighbors  # Ο αριθμός των γειτόνων για το KNN, αν έχει οριστεί
-        self.results = []  # Αποθήκευση των μετρικών αποτελεσμάτων για κάθε fold
-        self.detailed_results = [] # Αποθήκευση λεπτομερών αποτελεσμάτων (για καθε αριθμό γειτόνων) για κάθε fold
+        self.results = []  # Μετρικές για κάθε fold
+        self.detailed_results = [] # Λεπτομερές μετρικές για καθε αριθμό γειτόνων για κάθε fold
         self.X = None  # Τα χαρακτηριστικά των δεδομένων
         self.Y = None  # Η ανταπόκριση των δεδομένων
         self.X_train = None  # Τα χαρακτηριστικά των δεδομένων εκπαίδευσης
@@ -32,7 +33,7 @@ class KNN:
         self.preprocessor = None  # Ο προεπεξεργαστής των δεδομένων
         self.validation_metrics = None  # Οι μετρικές επικύρωσης του μοντέλου
         self.validation_metrics_str = ""  # Ένα string που περιέχει τις μετρικές επικύρωσης
-        self.cv_validation_metrics = None  # Οι μετρικές επικύρωσης για cross-validation
+        self.cv_validation_metrics = None  # Οι συνολικές μετρικές επικύρωσης του cross-validation
         self.overall_validation_metrics = None  # Οι συνολικές μετρικές επικύρωσης
         self.final_model = None  # Το τελικό μοντέλο KNN μετά την εκπαίδευση
 
@@ -44,6 +45,9 @@ class KNN:
             on (str): Η μετρική για την οποία θα γίνει η βελτιστοποίηση. Μπορεί να είναι "accuracy" ή "precision".
             k_range (range): Το εύρος των τιμών για τον αριθμό των γειτόνων που θα εξεταστούν.
             fold_range (range): Το εύρος των τιμών για τον αριθμό των folds στο cross-validation.
+
+        Raises:
+            ValueError: Αν η μετρική που έχει δοθεί δεν είναι έγκυρη.
         """
 
         # Ορισμός του pipeline με τον preprocessor και τον classifier KNN
@@ -134,22 +138,14 @@ class KNN:
         self.y = train_data[self.response_column]
 
         # Διαχωρισμός των χαρακτηριστικών σε κατηγορικά και αριθμητικά
-        categorical_cols = self.X.select_dtypes(include=["category"]).columns.tolist()
+        categorical_cols = self.X.select_dtypes(include=["category", "object"]).columns.tolist()
         numeric_cols = self.X.select_dtypes( include=["int64", "float64"]).columns.tolist()
 
         # Αρχικοποίηση του preprocessor με StandardScaler για αριθμητικά χαρακτηριστικά και OneHotEncoder για κατηγορικά χαρακτηριστικά
         self.preprocessor = ColumnTransformer(
-            transformers=[
-                (
-                    "num",
-                    StandardScaler(),
-                    numeric_cols,
-                ),  # Κανονικοποίηση των αριθμητικών χαρακτηριστικών
-                (
-                    "cat",
-                    OneHotEncoder(),
-                    categorical_cols,
-                ),  # Μετατροπή των κατηγορικών χαρακτηριστικών σε δυαδική μορφή
+            transformers= [
+                "num", StandardScaler(), numeric_cols, # Κανονικοποίηση των αριθμητικών χαρακτηριστικών
+                "cat", OneHotEncoder(), categorical_cols, # Μετατροπή των κατηγορικών χαρακτηριστικών σε δυαδική μορφή
             ]
         )
 
@@ -170,6 +166,7 @@ class KNN:
         Raises:
             ValueError: Αν δεν έχει οριστεί ο αριθμός γειτόνων ή αν δεν έχουν τροφοδοτηθεί τα δεδομένα εκπαίδευσης.
         """
+
         if self.best_n_neighbors is None:
             raise ValueError(
                 "Ο αριθμός γειτόνων δεν έχει οριστεί. Καλέστε πρώτα τη μέθοδο find_best_neighbors() ή ορίστε τον αριθμό γειτόνων κατά την αρχικοποίηση του μοντέλου."
@@ -183,12 +180,7 @@ class KNN:
         self.final_model = Pipeline(
             [
                 ("preprocessor", self.preprocessor),
-                (
-                    "classifier",
-                    KNeighborsClassifier(
-                        n_neighbors=self.best_n_neighbors,
-                    ),
-                ),
+                ("classifier", KNeighborsClassifier(n_neighbors=self.best_n_neighbors)),
             ]
         )
 
@@ -209,6 +201,7 @@ class KNN:
         Raises:
             ValueError: Αν το μοντέλο δεν έχει εκπαιδευτεί ή αν δεν έχουν τροφοδοτηθεί τα νέα δεδομένα.
         """
+
         if self.final_model is None:
             raise ValueError("Το μοντέλο δεν έχει εκπαιδευτεί. Καλέστε πρώτα τη μέθοδο fit().")
 
@@ -233,6 +226,7 @@ class KNN:
         Raises:
             ValueError: Αν το μοντέλο δεν έχει εκπαιδευτεί.
         """
+
         if self.final_model is None:
             raise ValueError("Το μοντέλο δεν έχει εκπαιδευτεί. Καλέστε πρώτα τη μέθοδο fit().")
 
