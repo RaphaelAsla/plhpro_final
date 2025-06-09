@@ -139,13 +139,13 @@ class KNN:
 
         # Διαχωρισμός των χαρακτηριστικών σε κατηγορικά και αριθμητικά
         categorical_cols = self.X.select_dtypes(include=["category", "object"]).columns.tolist()
-        numeric_cols = self.X.select_dtypes( include=["int64", "float64"]).columns.tolist()
+        numeric_cols = self.X.select_dtypes(include=["int64", "float64"]).columns.tolist()
 
         # Αρχικοποίηση του preprocessor με StandardScaler για αριθμητικά χαρακτηριστικά και OneHotEncoder για κατηγορικά χαρακτηριστικά
         self.preprocessor = ColumnTransformer(
             transformers= [
-                "num", StandardScaler(), numeric_cols, # Κανονικοποίηση των αριθμητικών χαρακτηριστικών
-                "cat", OneHotEncoder(), categorical_cols, # Μετατροπή των κατηγορικών χαρακτηριστικών σε δυαδική μορφή
+                ("num", StandardScaler(), numeric_cols), # Κανονικοποίηση των αριθμητικών χαρακτηριστικών
+                ("cat", OneHotEncoder(), categorical_cols) # Μετατροπή των κατηγορικών χαρακτηριστικών σε δυαδική μορφή
             ]
         )
 
