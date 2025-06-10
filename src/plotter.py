@@ -53,7 +53,7 @@ class Plotter:
         title = metric[3].upper() + metric[3:]
 
         df = self.cv_metrics[1]
-        df["cv"] = df["cv"].astype(str) # skipping some folds otherwise
+        df["cv"] = df["cv"].astype(str) # παραλείπονται κάποια folds χωρίς αυτό, δεν είμαι σίγουρος γιατί
 
         sns.barplot(data=df, x="cv", y=metric, hue="cv")
 
