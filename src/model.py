@@ -53,6 +53,11 @@ class KNN:
             ValueError: Αν η μετρική που έχει δοθεί δεν είναι έγκυρη.
         """
 
+        if self.best_n_neighbors is not None:
+            raise ValueError(
+                "Ο αριθμός γειτόνων έχει ήδη οριστεί."
+            )
+
         # Ορισμός του pipeline με τον preprocessor και τον classifier KNN
         knn = Pipeline(
             [

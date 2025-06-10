@@ -1,3 +1,5 @@
 src/__pycache__
 .venv
 predictions/*
+papers/mean_metric_per_fold.png
+papers/neighbors_vs_metric_per_fold.png
