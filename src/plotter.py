@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-from mpl_toolkits.mplot3d import Axes3D
 
 class Plotter:
     def __init__(self, metrics):
@@ -67,4 +66,3 @@ class Plotter:
 
         plt.savefig(output_path) if output_path else plt.show()
         plt.clf()
-
