@@ -1,4 +1,5 @@
 import pandas as pd
+from plotter import Plotter
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.neighbors import KNeighborsClassifier
@@ -18,6 +19,7 @@ class KNN:
             random_state (int): Το seed για αναπαραγωγιμότητα.
         """
 
+        self.plotter = None  # Ο Plotter για την απεικόνιση των μετρικών
         self.response_column = "Ανταπόκριση"  # Ονομασία της στήλης που περιέχει την ανταπόκριση
         self.test_size = test_size  # Το ποσοστό των δεδομένων που θα χρησιμοποιηθούν για επικύρωση
         self.random_state = random_state  # Το seed
@@ -36,8 +38,9 @@ class KNN:
         self.cv_validation_metrics = None  # Οι συνολικές μετρικές επικύρωσης του cross-validation
         self.overall_validation_metrics = None  # Οι συνολικές μετρικές επικύρωσης
         self.final_model = None  # Το τελικό μοντέλο KNN μετά την εκπαίδευση
+        self.metric = "accuracy"  # Η μετρική που θα χρησιμοποιηθεί για την αξιολόγηση του μοντέλου
 
-    def find_best_neighbors(self, on="accuracy", k_range=range(2, 21), fold_range=range(2, 11)):
+    def find_best_neighbors(self, k_range, fold_range):
         """
         Εύρεση του καλύτερου αριθμού γειτόνων για το KNN μέσω Grid Search με cross-validation σε διάφορα folds και εύρος αριθμού γειτόνων.
 
@@ -69,8 +72,8 @@ class KNN:
             "accuracy": "accuracy",
         }
 
-        if on not in scoring:
-            raise ValueError(f"Invalid scoring method '{on}'. Available methods are: {', '.join(scoring.keys())}")
+        if self.metric not in scoring:
+            raise ValueError(f"Invalid scoring method '{self.metric}'. Available methods are: {', '.join(scoring.keys())}")
 
         # Εκτέλεση του grid search για κάθε fold στο εύρος που έχει οριστεί
         for c in fold_range:
@@ -79,7 +82,7 @@ class KNN:
                 param_grid,
                 cv=StratifiedKFold(n_splits=c),
                 scoring=scoring,
-                refit=on, # type: ignore
+                refit=self.metric, # type: ignore
                 n_jobs=-1,
                 return_train_score=True,
             )
@@ -261,18 +264,24 @@ class KNN:
             "confusion_matrix": cm, # type: ignore
         }
 
-        # Αποθηκεύσει των λεπτομερών μετρικών επικύρωσης σε dict
-        self.cv_validation_metrics = {
-            "best_neighbors_per_fold": pd.DataFrame(self.results),
-            "all_neighbors_per_fold": pd.DataFrame(self.detailed_results),
-        }
+        if len(self.results) > 0:
+            # Αποθηκεύσει των λεπτομερών μετρικών επικύρωσης σε dict
+            self.cv_validation_metrics = {
+                "best_neighbors_per_fold": pd.DataFrame(self.results),
+                "all_neighbors_per_fold": pd.DataFrame(self.detailed_results),
+            }
 
-        # Αποθήκευση των συνολικών μετρικών επικύρωσης σε dict
-        self.overall_validation_metrics = {
-            "cv_validation_metrics": self.cv_validation_metrics,
-            "validation_metrics": self.validation_metrics,
-            "best_neighbors": self.best_n_neighbors,
-        }
+            # Αποθήκευση των συνολικών μετρικών επικύρωσης σε dict
+            self.overall_validation_metrics = {
+                "cv_validation_metrics": self.cv_validation_metrics,
+                "validation_metrics": self.validation_metrics,
+                "best_neighbors": self.best_n_neighbors,
+            }
+
+            # Δημιουργία του Plotter για την απεικόνιση των μετρικών
+            self.plotter = Plotter(self.overall_validation_metrics)
+            self.plotter.plot_neighbors_vs_metric_per_fold(self.metric, "../plots/neighbors_vs_metric_per_fold.png")
+            self.plotter.plot_mean_metric_per_fold(self.metric, "../plots/mean_metric_per_fold.png")
 
         # Δημιουργία του string με τις μετρικές επικύρωσης για αναφορά
         self.validation_metrics_str += "\nFinal Validation Metrics:\n"

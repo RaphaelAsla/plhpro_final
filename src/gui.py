@@ -708,7 +708,6 @@ class CampaignPredictionApp:
             self.knn_model = KNN(neighbors=k, test_size=0.2, random_state=42)
             self.knn_model.feed_data(self.past_campaign_data)
             self.knn_model.fit()
-            self.knn_model.best_n_neighbors = k  # για συνέπεια
 
             self.model_trained = True
             self.predictions_df = None

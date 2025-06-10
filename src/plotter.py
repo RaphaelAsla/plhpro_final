@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+from mpl_toolkits.mplot3d import Axes3D
 
 class Plotter:
     def __init__(self, metrics):
@@ -16,7 +17,7 @@ class Plotter:
         self.best_neighbors = metrics["best_neighbors"]
         
 
-    def plot_neighbors_vs_metric_per_fold(self, metric="accuracy", output_path=None):
+    def plot_neighbors_vs_metric_per_fold(self, metric, output_path=None):
         """
         Δημιουργεί ένα graph που απεικονίζει τη σχέση μεταξύ του αριθμού των γειτόνων και της μετρικής για κάθε fold.
 
@@ -42,7 +43,7 @@ class Plotter:
         plt.savefig(output_path) if output_path else plt.show()
         plt.clf()
 
-    def plot_mean_metric_per_fold(self, metric="accuracy", output_path=None):
+    def plot_mean_metric_per_fold(self, metric, output_path=None):
         """
         Δημιουργεί ένα graph που απεικονίζει τη μέση τιμή της μετρικής για κάθε fold.
         :Parameters 
@@ -66,29 +67,4 @@ class Plotter:
 
         plt.savefig(output_path) if output_path else plt.show()
         plt.clf()
-
-    def plot_trisurf_neighbor_vs_metric_per_fold(self, metric="accuracy", output_path=None):
-        """
-        Δημιουργεί ένα 3D graph που απεικονίζει τη σχέση μεταξύ του αριθμού των γειτόνων, της μετρικής και της ακρίβειας για κάθε fold.
-        :Parameters 
-            metric (string): Η μετρική που θα απεικονιστεί (π.χ. "accuracy", "precision").
-            output_path (string): Το path για αποθήκευση του graph. Αν είναι None, το γράφημα θα εμφανιστεί στην οθόνη.
-        """
-        metric = "cv_" + metric
-        title = metric[3].upper() + metric[3:]
-
-        df = self.cv_metrics[1]
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')  
-
-        ax.scatter(df['neighbors'], df['cv'], df['cv_accuracy'], cmap="viridis", edgecolor="none") # type: ignore
-
-        ax.set_xlabel('neighbors')
-        ax.set_ylabel('cv')
-        ax.set_zlabel('accuracy') # type: ignore
-
-        plt.title(f"{title} vs Number of Neighbors per Fold 3D")
-
-        plt.savefig(output_path) if output_path else plt.show()
 
