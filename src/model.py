@@ -25,7 +25,7 @@ class KNN:
         self.results = []  # Μετρικές για κάθε fold
         self.detailed_results = [] # Λεπτομερές μετρικές για καθε αριθμό γειτόνων για κάθε fold
         self.X = None  # Τα χαρακτηριστικά των δεδομένων
-        self.Y = None  # Η ανταπόκριση των δεδομένων
+        self.y = None  # Η ανταπόκριση των δεδομένων
         self.X_train = None  # Τα χαρακτηριστικά των δεδομένων εκπαίδευσης
         self.y_train = None  # Η ανταπόκριση των δεδομένων εκπαίδευσης
         self.X_valid = None  # Τα χαρακτηριστικά των δεδομένων επικύρωσης
@@ -88,9 +88,9 @@ class KNN:
             grid_search.fit(self.X_train, self.y_train)
 
             # Αποθήκευση του καλύτερου αριθμού γειτόνων και των μετρικών
-            current_best_n_neighbors = grid_search.best_params_[ "classifier__n_neighbors" ]
+            current_best_n_neighbors = grid_search.best_params_["classifier__n_neighbors"]
 
-            # Εκπαίδευση του μοντέλου με τις καλύτερες παραμέτρους
+            # Πρόβλεψη με χρήση του μοντέλου με τις καλύτερες παραμέτρους (για plotting, δεν επιρεάζει πιο Κ θα χρησιμοποιηθεί τελικά)
             best_model = grid_search.best_estimator_
             y_pred = best_model.predict(self.X_valid)
             accuracy = accuracy_score(self.y_valid, y_pred)

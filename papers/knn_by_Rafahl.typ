@@ -1,9 +1,10 @@
-#set page(margin: 3em, height: auto)
+#set page(margin: 3em, height: auto, fill: black)
+#set text(fill: white)
 #show link: it => underline(text(fill: blue)[#it])
 
 #align(center)[#text(size: 20pt)[*Υλοποίηση Μοντέλου KNN*]]
-#align(center)[#text(size: 12pt)[Ραφαήλ Ασλανίδης]]
-#align(center)[#text(size: 8pt)[Τελικό Project ΠΛΗΠΡΟ -- Ελληνικό Ανοιχτό Πανεπιστήμιο -- 2025]]
+#align(center)[#text(size: 13pt)[Ραφαήλ Ασλανίδης]]
+#align(center)[#text(size: 10pt)[Τελικό Project ΠΛΗΠΡΟ -- Ελληνικό Ανοιχτό Πανεπιστήμιο -- 2025]]
 \
 = Εισαγωγή
 Ο αλγόριθμος KNN (K-Nearest Neighbors) είναι ένας αλγόριθμος μηχανικής μάθησης που
@@ -37,8 +38,10 @@ class-specific precision.
 τιμές K οδηγούν overfitting, ενώ πολύ μεγάλες τιμές
 μπορεί να οδηγήσουν σε underfitting, το optimal είναι κάπου ενδιάμεσα.
 
-Το #link("https://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation:~:text=out%20cross%2Dvalidation.-,k%2Dfold%20cross%2Dvalidation,-%5Bedit%5D")[k-fold
-cross-validation], είναι μια μέθοδος που επιτρέπει την αποτίμηση της απόδοσης
+Το #link(
+  "https://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation:~:text=out%20cross%2Dvalidation.-,k%2Dfold%20cross%2Dvalidation,-%5Bedit%5D",
+)[k-fold
+  cross-validation], είναι μια μέθοδος που επιτρέπει την αποτίμηση της απόδοσης
 ενός μοντέλου με μεγαλύτερη σταθερότητα. Το dataset χωρίζεται σε
 k ίσα μέρη (folds), και το μοντέλο εκπαιδεύεται και αξιολογείται k φορές, κάθε
 φορά με διαφορετικό fold ως σύνολο δοκιμής.
