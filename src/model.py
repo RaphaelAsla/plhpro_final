@@ -250,13 +250,10 @@ class KNN:
         cm = confusion_matrix(self.y_valid, y_pred)
 
         # Υπολογίζει το accuracy για κάθε κλάση (yes, no)
-        class_specific_accuracy = {}
-        for i, label in enumerate(["yes", "no"]):
-            TP = cm[i, i]
-            total_class_instances = cm[i, :].sum()
-            class_specific_accuracy[label] = (
-                TP / total_class_instances if total_class_instances > 0 else 0
-            )
+        class_specific_accuracy = {
+            "yes": cm[0, 0] / cm[0, :].sum() if cm[0, :].sum() > 0 else 0,
+            "no": cm[1, 1] / cm[1, :].sum() if cm[1, :].sum() > 0 else 0,
+        }
 
         # Αποθηκεύει τις μετρικές επικύρωσης σε dict
         self.validation_metrics = {
